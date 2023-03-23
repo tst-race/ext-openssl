@@ -27,7 +27,13 @@ import race_ext_builder as builder
 
 def get_cli_arguments():
     """Parse command-line arguments to the script"""
-    parser = builder.get_arg_parser("openssl", "1.1.1l", 1, __file__, [builder.TARGET_ANDROID_x86_64, builder.TARGET_ANDROID_arm64_v8a])
+    parser = builder.get_arg_parser(
+        "openssl",
+        "1.1.1l",
+        1,
+        __file__,
+        [builder.TARGET_ANDROID_x86_64, builder.TARGET_ANDROID_arm64_v8a],
+    )
     return builder.normalize_args(parser.parse_args())
 
 
@@ -44,36 +50,58 @@ if __name__ == "__main__":
         extract="tar.gz",
     )
 
-    source_dir = os.path.join(args.source_dir, f"openssl-OpenSSL_{args.version.replace('.', '_')}")
+    source_dir = os.path.join(
+        args.source_dir, f"openssl-OpenSSL_{args.version.replace('.', '_')}"
+    )
     env = builder.create_standard_envvars(args)
 
     logging.root.info("Configuring build")
     if args.target == builder.TARGET_ANDROID_x86_64:
-        builder.execute(args, [
-            "./Configure",
-            "android-x86_64",
-            f"-D__ANDROID_API__={os.environ['MIN_SDK_VERSION']}",
-            f"--prefix=/",
-        ], cwd=source_dir, env=env)
+        builder.execute(
+            args,
+            [
+                "./Configure",
+                "android-x86_64",
+                f"-D__ANDROID_API__={os.environ['MIN_SDK_VERSION']}",
+                f"--prefix=/",
+            ],
+            cwd=source_dir,
+            env=env,
+        )
 
     elif args.target == builder.TARGET_ANDROID_arm64_v8a:
-        builder.execute(args, [
-            "./Configure",
-            "android-arm64",
-            f"-D__ANDROID_API__={os.environ['MIN_SDK_VERSION']}",
-            f"--prefix=/",
-        ], cwd=source_dir, env=env)
+        builder.execute(
+            args,
+            [
+                "./Configure",
+                "android-arm64",
+                f"-D__ANDROID_API__={os.environ['MIN_SDK_VERSION']}",
+                f"--prefix=/",
+            ],
+            cwd=source_dir,
+            env=env,
+        )
 
     logging.root.info("Building")
-    builder.execute(args, [
-        "make",
-        "-j",
-        args.num_threads,
-    ], cwd=source_dir, env=env)
-    builder.execute(args, [
-        "make",
-        f"DESTDIR={args.install_dir}",
-        "install",
-    ], cwd=source_dir, env=env)
+    builder.execute(
+        args,
+        [
+            "make",
+            "-j",
+            args.num_threads,
+        ],
+        cwd=source_dir,
+        env=env,
+    )
+    builder.execute(
+        args,
+        [
+            "make",
+            f"DESTDIR={args.install_dir}",
+            "install",
+        ],
+        cwd=source_dir,
+        env=env,
+    )
 
     builder.create_package(args)
